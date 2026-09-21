@@ -1,8 +1,8 @@
 /**
  * monitor.js — main client for the LoGuard Node.js SDK.
  */
-import { sendSigned, sendSignedMethod, sendNoBody } from "./transport.js";
-import { buildEvent, AlertRule } from "./models.js";
+import { sendSigned } from "./transport.js";
+import { buildEvent } from "./models.js";
 import { LoGuardAuthError, LoGuardNotInitializedError, LoGuardValidationError, LoGuardError } from "./errors.js";
 
 const DEFAULT_BASE_URL = "https://loguard.org";
@@ -22,8 +22,6 @@ class Monitor {
 
     this._fafQueue = [];
     this._fafTimer = null;
-
-    this.alerts = new AlertsClient(this);
   }
 
   init({
@@ -145,72 +143,6 @@ class Monitor {
     } catch {
       // fire-and-forget -- errors here never propagate outward
     }
-  }
-}
-
-// Alerts sub-client
-
-class AlertsClient {
-  constructor(mon) {
-    this._mon = mon;
-  }
-
-  _url(id = null) {
-    const base = `${this._mon._baseUrl}/v1/alert-rules`;
-    return id !== null ? `${base}/${id}` : base;
-  }
-
-  async create(rule) {
-    this._mon._assertInitialized();
-    const data = await sendSigned(this._url(), rule.toDict(), {
-      apiKey: this._mon._apiKey, timeout: this._mon._timeout, retries: this._mon._retries,
-    });
-    return AlertRule.fromDict(data ?? {});
-  }
-
-  async list() {
-    this._mon._assertInitialized();
-    const data = await sendNoBody(this._url(), {
-      apiKey: this._mon._apiKey, timeout: this._mon._timeout, retries: this._mon._retries, method: "GET",
-    });
-    const items = Array.isArray(data) ? data : (data?.rules ?? []);
-    return items.map((d) => AlertRule.fromDict(d));
-  }
-
-  async get(ruleId) {
-    this._mon._assertInitialized();
-    const data = await sendNoBody(this._url(ruleId), {
-      apiKey: this._mon._apiKey, timeout: this._mon._timeout, retries: this._mon._retries, method: "GET",
-    });
-    return AlertRule.fromDict(data ?? {});
-  }
-
-  async update(rule) {
-    this._mon._assertInitialized();
-    if (rule.id === null) throw new LoGuardValidationError("rule.id is required to update");
-    const data = await sendSignedMethod(this._url(rule.id), rule.toDict(), {
-      apiKey: this._mon._apiKey, timeout: this._mon._timeout, retries: this._mon._retries, method: "PUT",
-    });
-    return AlertRule.fromDict(data ?? {});
-  }
-
-  async delete(ruleId) {
-    this._mon._assertInitialized();
-    await sendNoBody(this._url(ruleId), {
-      apiKey: this._mon._apiKey, timeout: this._mon._timeout, retries: this._mon._retries, method: "DELETE",
-    });
-  }
-
-  async enable(ruleId) {
-    const rule = await this.get(ruleId);
-    rule.enabled = true;
-    return this.update(rule);
-  }
-
-  async disable(ruleId) {
-    const rule = await this.get(ruleId);
-    rule.enabled = false;
-    return this.update(rule);
   }
 }
 

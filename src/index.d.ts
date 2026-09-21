@@ -20,47 +20,6 @@ export interface IngestResult {
   usage?: Record<string, any>;
 }
 
-export interface AlertConditionInput {
-  field: string;
-  op: string;
-  value: any;
-}
-
-export declare class AlertRule {
-  constructor(opts: {
-    name: string;
-    conditions?: AlertConditionInput[];
-    severity?: "low" | "medium" | "high" | "critical";
-    actions?: Array<"notify" | "block" | "log">;
-    enabled?: boolean;
-    description?: string;
-    logic?: "and" | "or";
-    cooldownSec?: number;
-    id?: number | null;
-  });
-  id: number | null;
-  name: string;
-  conditions: AlertConditionInput[];
-  severity: string;
-  actions: string[];
-  enabled: boolean;
-  description: string;
-  logic: string;
-  cooldownSec: number;
-  toDict(): Record<string, any>;
-  static fromDict(d: Record<string, any>): AlertRule;
-}
-
-declare class AlertsClient {
-  create(rule: AlertRule): Promise<AlertRule>;
-  list(): Promise<AlertRule[]>;
-  get(ruleId: number): Promise<AlertRule>;
-  update(rule: AlertRule): Promise<AlertRule>;
-  delete(ruleId: number): Promise<void>;
-  enable(ruleId: number): Promise<AlertRule>;
-  disable(ruleId: number): Promise<AlertRule>;
-}
-
 export interface MonitorInitOptions {
   apiKey: string;
   baseUrl?: string;
@@ -75,7 +34,6 @@ declare class Monitor {
   event(input: EventInput): Promise<IngestResult>;
   eventBatch(events: EventInput[]): Promise<IngestResult>;
   eventFireAndForget(input: EventInput): void;
-  alerts: AlertsClient;
 }
 
 export declare const monitor: Monitor;

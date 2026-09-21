@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { sign, buildBody } from "../src/signing.js";
-import { buildEvent, AlertRule } from "../src/models.js";
+import { buildEvent } from "../src/models.js";
 import { getRealIp } from "../src/express.js";
 import { LoGuardError, LoGuardAuthError } from "../src/errors.js";
 
@@ -47,13 +47,6 @@ test("buildEvent() validates required fields", () => {
 test("buildEvent() normalizes the path (adds a leading /)", () => {
   const ev = buildEvent({ type: "x", ip: "1.2.3.4", path: "no-slash", statusCode: 200 });
   assert.equal(ev.path, "/no-slash");
-});
-
-test("AlertRule toDict/fromDict round-trip", () => {
-  const rule = new AlertRule({ name: "test", conditions: [{ field: "ip", op: "eq", value: "1.2.3.4" }] });
-  const roundTripped = AlertRule.fromDict(rule.toDict());
-  assert.equal(roundTripped.name, "test");
-  assert.equal(roundTripped.conditions.length, 1);
 });
 
 // express.js -- anti-spoof
