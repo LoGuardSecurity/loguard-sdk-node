@@ -1,0 +1,41 @@
+name: AI contract regression
+on:
+  pull_request:
+  push:
+permissions:
+  contents: read
+concurrency:
+  group: ai-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  LOGUARD_API_KEY: ''
+  LOGGUARD_API_KEY: ''
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test tests/ai-contract-privacy.test.js
+  full-suite:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@12.3.4 --ignore-scripts --no-audit --no-fund
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: node --test tests/unit.test.js tests/ai-contract-privacy.test.js

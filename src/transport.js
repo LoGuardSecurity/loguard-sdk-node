@@ -41,15 +41,15 @@ function raiseForStatus(status, data) {
     if (detail === "subscription_expired") {
       throw new LoGuardAuthError("Subscription expired — renew at loguard.org");
     }
-    throw new LoGuardAuthError(`Access denied: ${JSON.stringify(detail)}`);
+    throw new LoGuardAuthError("Access denied");
   }
-  if (status === 404) throw new LoGuardNotFoundError(`Not found: ${JSON.stringify(detail)}`);
-  if (status === 409) throw new LoGuardConflictError(`Conflict: ${JSON.stringify(detail)}`);
+  if (status === 404) throw new LoGuardNotFoundError("Not found");
+  if (status === 409) throw new LoGuardConflictError("Conflict");
   if (status === 422) throw new LoGuardValidationError(`Validation error`);
   if (status === 429) {
     if (detail && detail.err === "usage_limit_exceeded") {
       throw new LoGuardQuotaError(
-        `Monthly quota exceeded: ${detail.used}/${detail.limit} events on plan '${detail.plan}'. Upgrade at loguard.org`
+        "Monthly quota exceeded"
       );
     }
     throw new LoGuardConnectionError("Rate limited");
@@ -91,7 +91,7 @@ export async function sendNoBody(url, { apiKey, timeout = 10_000, retries = 3, m
           e instanceof LoGuardQuotaError) {
         throw e;
       }
-      lastErr = new LoGuardConnectionError(`Connection error: ${e.message}`);
+      lastErr = new LoGuardConnectionError("Connection error");
     }
     if (attempt < retries) await sleep(400 * attempt);
   }
@@ -123,7 +123,7 @@ export async function sendSignedMethod(url, payload, { apiKey, timeout = 10_000,
           e instanceof LoGuardQuotaError) {
         throw e;
       }
-      lastErr = new LoGuardConnectionError(`Connection error: ${e.message}`);
+      lastErr = new LoGuardConnectionError("Connection error");
     }
     if (attempt < retries) await sleep(400 * attempt);
   }
@@ -159,7 +159,7 @@ export async function sendSigned(url, payload, { apiKey, timeout = 10_000, retri
           e instanceof LoGuardQuotaError) {
         throw e;
       }
-      lastErr = new LoGuardConnectionError(`Connection error: ${e.message}`);
+      lastErr = new LoGuardConnectionError("Connection error");
     }
 
     if (attempt < retries) {
